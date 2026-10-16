@@ -1,1 +1,47 @@
-sieve
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guided Sieve of Eratosthenes</title>
+<style>
+body{font-family:Arial,sans-serif;max-width:1000px;margin:20px auto;padding:20px}
+.controls{margin-bottom:15px}
+button{padding:10px 16px;margin-right:8px;border:none;border-radius:8px;background:#2563eb;color:white;cursor:pointer}
+#reset{background:#6b7280}
+#message{background:#f1f5f9;padding:12px;border-radius:8px;margin-bottom:15px}
+.grid{display:grid;grid-template-columns:repeat(10,1fr);gap:6px}
+.cell{height:50px;display:flex;align-items:center;justify-content:center;border:1px solid #ccc;border-radius:8px;cursor:pointer;font-weight:bold}
+.crossed{background:#fecaca;color:#666;text-decoration:line-through}
+.current{background:#22c55e;color:white}
+.selected{background:#fde047}
+.primes{margin-top:20px;padding:12px;background:#dcfce7;border-radius:8px;display:none}
+</style>
+</head>
+<body>
+<h1>Guided Sieve of Eratosthenes</h1>
+<div class="controls">
+<button onclick="checkStep()">Check My Multiples</button>
+<button id="reset" onclick="resetApp()">Reset</button>
+</div>
+<div id="message"></div>
+<div id="grid" class="grid"></div>
+<div id="primes" class="primes"></div>
+<script>
+const sievePrimes=[2,3,5,7];
+let currentIndex=0;
+let crossedOut=new Set([1]);
+let selected=new Set();
+let completed=false;
+function currentPrime(){return sievePrimes[currentIndex];}
+function msg(t){document.getElementById('message').innerHTML='<strong>Current Prime:</strong> '+(completed?'Completed':currentPrime())+'<br>'+t;}
+function render(){const g=document.getElementById('grid');g.innerHTML='';for(let n=1;n<=100;n++){const d=document.createElement('div');d.className='cell';if(crossedOut.has(n))d.classList.add('crossed');else if(!completed&&n===currentPrime())d.classList.add('current');else if(selected.has(n))d.classList.add('selected');d.textContent=n;d.onclick=()=>toggle(n);g.appendChild(d);}}
+function toggle(n){if(completed||crossedOut.has(n)||n===currentPrime())return;selected.has(n)?selected.delete(n):selected.add(n);render();}
+function expected(){const s=new Set();for(let n=currentPrime()*2;n<=100;n+=currentPrime()){if(!crossedOut.has(n))s.add(n);}return s;}
+function checkStep(){const e=[...expected()].sort((a,b)=>a-b);const c=[...selected].sort((a,b)=>a-b);const ok=e.length===c.length&&e.every((v,i)=>v===c[i]);if(ok){selected.forEach(x=>crossedOut.add(x));selected.clear();if(currentIndex===sievePrimes.length-1){completed=true;msg('Well done! The remaining numbers are prime.');showPrimes();}else{currentIndex++;msg('Correct! Now click all multiples of '+currentPrime()+' greater than '+currentPrime()+'.');}render();}else{const miss=e.find(x=>!selected.has(x));msg('Not quite. Check the multiples of '+currentPrime()+'. For example, '+miss+' still needs attention.');}}
+function showPrimes(){const p=[];for(let n=2;n<=100;n++){if(!crossedOut.has(n))p.push(n);}const div=document.getElementById('primes');div.style.display='block';div.innerHTML='<h2>Prime Numbers to 100</h2>'+p.join(', ');}
+function resetApp(){currentIndex=0;crossedOut=new Set([1]);selected=new Set();completed=false;document.getElementById('primes').style.display='none';msg('Click all multiples of 2 greater than 2.');render();}
+resetApp();
+</script>
+</body>
+</html>
